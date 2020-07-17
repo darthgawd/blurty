@@ -42,8 +42,12 @@ client.on("message", (msg) => {
         }
       });
     }
-    else if (command === 'check') {
-        
+    else if (command === 'check_missed') {
+        let witnessName = msg.content.trim().split(/ +/g)[1]; // grab name after command
+        blurt.api.getWitnessByAccount(witnessName, function (err, result) {
+            console.log(result)
+            msg.channel.send(`${witnessName} has a total of ` + result.total_missed + ' missed blocks');
+          });
           
     }
 
