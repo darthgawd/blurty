@@ -35,20 +35,17 @@ client.on("message", (msg) => {
     const args = msg.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
     
-    if (command === "get_active_witnesses") {
+    if (command === "get_top20") {
       blurt.api.getActiveWitnesses(function (err, result) {
         if (result) {
           msg.channel.send(result.sort()); // display result in alphabetical order
         }
       });
     }
-    
+    else if (command === 'check') {
+        
+          
+    }
 
-    // else if (command === 'check_missed' && msg.content) {
-    // console.log(msg.content)
-    //   blurt.api.getWitnessByAccount("praxeaze", function (err, result) {
-    //     msg.channel.send(`Witness result.total_missed`);
-    //   });
-    // }
   }
 });
