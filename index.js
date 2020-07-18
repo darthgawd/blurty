@@ -3,6 +3,7 @@ const blurt = require("@blurtfoundation/blurtjs");
 const Discord = require("discord.js");
 const moment = require("moment");
 
+
 // Configuration
 blurt.api.setOptions({ url: "https://blurtd.privex.io" });
 blurt.config.set("transport", "https");
@@ -19,11 +20,14 @@ blurt.config.set("alternative_api_endpoints", [
 ]);
 blurt.config.get("chain_id");
 
+
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
 const prefix = process.env.PREFIX;
 const currentMiss = 0;
+const witnesses = []
 const discordID = "";
+
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -42,17 +46,15 @@ client.on("message", (msg) => {
         console.log("use this command for help");
         break;
       case "get_top20":
-        blurt.api.getActiveWitnesses(async function (err, result) {
-          if (result) {
-            // console.log(result);
-            await msg.channel.send(result.sort()); // display result in alphabetical order
+        blurt.api.getActiveWitnesses(function (err, result) {
+          if (result) { msg.channel.send(result.sort()); // display result in alphabetical order
           }
         });
         break;
       case "check_missed":
         let witnessName = msg.content.trim().split(/ +/g)[1]; // grab name after command
         blurt.api.getWitnessByAccount(witnessName, function (err, result) {
-          //   console.log(result);
+            // console.log(result);
           msg.channel.send(
             `${witnessName} has a total of ` +
               result.total_missed +
@@ -62,8 +64,8 @@ client.on("message", (msg) => {
         break;
       case "monitor_on":
         //
-        blurt.api.getWitnessByAccount(witnessName, function (err, result) {
-          let witnessName = msg.content.trim().split(/ +/g)[1]; // 
+         // 
+        blurt.api.getWitnessByAccount(msg.content.trim().split(/ +/g)[1], function (err, result) {
           if (result.total_missed > currentMiss) { //  need to create db to hold witness name and discord ids
             msg.channel.send(
               "Missing blocks, please check your witness server"
@@ -71,7 +73,12 @@ client.on("message", (msg) => {
           }
         });
         break;
+        case "test":
+          console.log(blurt.config)
+    break;
       default:
     }
   }
 });
+
+
