@@ -22,6 +22,8 @@ blurt.config.get("chain_id");
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
 const prefix = process.env.PREFIX;
+const currentMiss = 0;
+const discordID = "";
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -29,27 +31,47 @@ client.on("ready", () => {
 });
 
 client.login(TOKEN);
+
 client.on("message", (msg) => {
   // if message is not the bot
   if (!msg.author.bot) {
     const args = msg.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
-    
-    if (command === "get_top20") {
-      blurt.api.getActiveWitnesses(function (err, result) {
-        if (result) {
-          msg.channel.send(result.sort()); // display result in alphabetical order
-        }
-      });
-    }
-    else if (command === 'check_missed') {
+    switch (command) {
+      case "help":
+        console.log("use this command for help");
+        break;
+      case "get_top20":
+        blurt.api.getActiveWitnesses(async function (err, result) {
+          if (result) {
+            // console.log(result);
+            await msg.channel.send(result.sort()); // display result in alphabetical order
+          }
+        });
+        break;
+      case "check_missed":
         let witnessName = msg.content.trim().split(/ +/g)[1]; // grab name after command
         blurt.api.getWitnessByAccount(witnessName, function (err, result) {
-            console.log(result)
-            msg.channel.send(`${witnessName} has a total of ` + result.total_missed + ' missed blocks');
-          });
-          
+          //   console.log(result);
+          msg.channel.send(
+            `${witnessName} has a total of ` +
+              result.total_missed +
+              " missed blocks"
+          );
+        });
+        break;
+      case "monitor_on":
+        //
+        blurt.api.getWitnessByAccount(witnessName, function (err, result) {
+          let witnessName = msg.content.trim().split(/ +/g)[1]; // 
+          if (result.total_missed > currentMiss) { //  need to create db to hold witness name and discord ids
+            msg.channel.send(
+              "Missing blocks, please check your witness server"
+            );
+          }
+        });
+        break;
+      default:
     }
-
   }
 });

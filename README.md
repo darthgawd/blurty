@@ -1,1 +1,1 @@
-# blurty
+# BlurtyBot (monitor your server)
