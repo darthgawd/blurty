@@ -3,7 +3,6 @@ const blurt = require("@blurtfoundation/blurtjs");
 const Discord = require("discord.js");
 const moment = require("moment");
 
-
 // Configuration
 blurt.api.setOptions({ url: "https://blurtd.privex.io" });
 blurt.config.set("transport", "https");
@@ -20,18 +19,45 @@ blurt.config.set("alternative_api_endpoints", [
 ]);
 blurt.config.get("chain_id");
 
-
 const client = new Discord.Client();
 const TOKEN = process.env.TOKEN;
 const prefix = process.env.PREFIX;
-const currentMiss = 0;
-const witnesses = []
-const discordID = "";
-
+const witnesses = [
+  {
+    witness: "block-buster",
+    authorId: "730190175065473127",
+    misses: 0,
+  },
+  {
+    witness: "someguy123",
+    authorId: "730190175065473127",
+    misses: 0,
+  },
+];
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   console.log(`prefix = ${prefix}`);
+  setInterval(() => {
+    for (let name = 0; name < witnesses.length; name++) {
+      blurt.api.getWitnessByAccount(witnesses[name].witness, async function (err, result) 
+       {
+        let missed =  result.total_missed;
+    
+        if (missed > witnesses[name].misses) {
+          // if total missed is greater than current missed
+          console.log(`${witnesses[name].witness} - you missed ${missed} block`)
+          // console.log(witnesses[name].authorId)
+
+          // console.log(`You missed a block! for a total of ${missed} missed blocks. Please check your witness server`);
+          witnesses[name].misses = missed;
+        
+        }
+        // console.log(err)
+      
+      });
+    }
+  }, 3000);
 });
 
 client.login(TOKEN);
@@ -47,38 +73,34 @@ client.on("message", (msg) => {
         break;
       case "get_top20":
         blurt.api.getActiveWitnesses(function (err, result) {
-          if (result) { msg.channel.send(result.sort()); // display result in alphabetical order
+          if (result) {
+            msg.channel.send(result.sort()); // display result in alphabetical order
           }
         });
         break;
       case "check_missed":
-        let witnessName = msg.content.trim().split(/ +/g)[1]; // grab name after command
-        blurt.api.getWitnessByAccount(witnessName, function (err, result) {
-            // console.log(result);
-          msg.channel.send(
-            `${witnessName} has a total of ` +
-              result.total_missed +
-              " missed blocks"
-          );
-        });
         break;
       case "monitor_on":
-        //
-         // 
-        blurt.api.getWitnessByAccount(msg.content.trim().split(/ +/g)[1], function (err, result) {
-          if (result.total_missed > currentMiss) { //  need to create db to hold witness name and discord ids
-            msg.channel.send(
-              "Missing blocks, please check your witness server"
-            );
-          }
-        });
+        let authorId = message.author.id;
+        witnesses.push({ witness : `${msg.content.trim().split(/ +/g)[1]}`, authorId : `${authorId}`, misses: 0})
         break;
-        case "test":
-          console.log(blurt.config)
-    break;
+      case "test":
+        // witnesses.push({ witness : `${msg.content.trim().split(/ +/g)[1]}`, id: `${msg.content.trim().split(/ +/g)[2]}`})
+        // console.log(msg.author.id);
+        break;
       default:
     }
   }
 });
 
-
+// blurt.api.getWitnessByAccount(witnessName =
+//   msg.content.trim().split(/ +/g)[1],
+//   function (err, result) {
+//     if (result.total_missed === currentMiss) {
+//       //  need to create db to hold witness name and discord ids
+//       msg.channel.send(
+//         "Missing blocks, please check your witness server"
+//       );
+//     }
+//   }
+// );
